@@ -1,6 +1,6 @@
 # Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis
 
-SDXL and PixArt-Sigma refinement, image generation, and BDS evaluation code accompanying **Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis**.
+SDXL and PixArt-Sigma refinement and image generation code accompanying **Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis**.
 
 ## SDXL setup
 
@@ -52,21 +52,9 @@ python compute_pixart.py --device_idx 0 --seed 0 --num_prompts 100 --output_dir 
 python compute_pixart.py --device_idx 0 --seed 0 --num_prompts 100 --output_dir ./results/pixart/fixed --fixing
 ```
 
-`--fixing` (also accepted as `--suppress`) enables refinement. Defaults from the supplied implementation are 50 inference steps, block index 23 (zero-based), quantile `q=0.9`, blending coefficient `kappa=0.5`, and EMA coefficient 0.7. Refinement is applied at zero-based steps 5 through 9. The command-line options `--steps`, `--layer_idx`, `--q`, and `--kappa` expose the corresponding settings. The generator seed is reset for each prompt, matching the supplied PixArt evaluation code.
+`--fixing` (also accepted as `--suppress`) enables refinement. Defaults from the supplied implementation are 50 inference steps, block index 23 (zero-based), quantile `q=0.9`, blending coefficient `kappa=0.5`, and EMA coefficient 0.7. Refinement is applied at zero-based steps 5 through 9. The command-line options `--steps`, `--layer_idx`, `--q`, and `--kappa` expose the corresponding settings. The generator seed is reset for each prompt.
 
 Each command saves images in prompt-specific subdirectories of its `--output_dir`. The required model weights and prompts are downloaded on first use.
-
-## Compute paired Body Distortion Score (BDS)
-
-Pass the parent directory containing both `original/` and `fixed/`:
-
-```bash
-python compute_bds.py --num_prompts 100 --output_dir ./results --csv_path ./results/scores_bds_pair.csv
-```
-
-The script evaluates prompts matching its human-related keyword filter and saves keypoint visualizations in `comparisons_bds_check/`.
-
-For the PixArt directories above, also install `ultralytics==8.3.129` and `opencv-python==4.11.0.86`, then use `--output_dir ./results/pixart` and a matching `--num_prompts` value.
 
 ## Third-party code
 

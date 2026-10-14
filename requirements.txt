@@ -39,7 +39,6 @@ nvidia-cusparse-cu12==12.1.0.106
 nvidia-nccl-cu12==2.20.5
 nvidia-nvjitlink-cu12==12.1.105
 nvidia-nvtx-cu12==12.1.105
-opencv-python==4.11.0.86
 packaging==25.0
 pandas==2.2.3
 pillow==11.0.0
@@ -68,8 +67,6 @@ tqdm==4.67.1
 transformers==4.51.3
 typing_extensions==4.12.2
 tzdata==2025.2
-ultralytics==8.3.129
-ultralytics-thop==2.0.14
 urllib3==2.4.0
 wcwidth==0.2.13
 wheel==0.45.1

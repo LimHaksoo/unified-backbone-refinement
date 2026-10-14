@@ -12,8 +12,6 @@ Thumbs.db
 results/
 result_batch/
 result_pixart/
-comparisons_bds_check/
-scores_*.csv
 *.pt
 *.pth
 *.ckpt
