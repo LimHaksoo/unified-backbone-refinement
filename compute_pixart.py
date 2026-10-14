@@ -1,7 +1,6 @@
-"""Generate PixArt-Sigma images and evaluate PickScore."""
+"""Generate PixArt-Sigma images with optional internal-feature refinement."""
 
 import argparse
-import csv
 from pathlib import Path
 import random
 import re
@@ -42,12 +41,11 @@ def main():
     import torch
     from datasets import load_dataset
     from tqdm import tqdm
-    from transformers import AutoModel, AutoProcessor
 
     from pixart_refinement import PixArtSigmaWrapper
 
     if not torch.cuda.is_available():
-        raise RuntimeError('This evaluation requires an NVIDIA GPU with CUDA support.')
+        raise RuntimeError('Image generation requires an NVIDIA GPU with CUDA support.')
     device = f'cuda:{args.device_idx}'
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
@@ -62,40 +60,14 @@ def main():
         device=device, seed=args.seed, suppress=args.suppress, q=args.q,
         kappa=args.kappa, layer_idx=args.layer_idx, steps=args.steps,
     )
-    processor = AutoProcessor.from_pretrained('laion/CLIP-ViT-H-14-laion2B-s32B-b79K')
-    scorer = AutoModel.from_pretrained('yuvalkirstain/PickScore_v1').eval().to(device)
-
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = args.output_dir / 'scores_all.csv'
-    scores = []
-    with csv_path.open('w', encoding='utf-8', newline='') as stream:
-        writer = csv.writer(stream)
-        writer.writerow(['idx', 'prompt', 'pick_score'])
-        for idx, prompt in enumerate(tqdm(prompts, desc='Generate & Score')):
-            image = wrapper.generate(prompt)
-            image_dir = args.output_dir / f'{idx:05d}_{safe_prompt_name(prompt)}'
-            image_dir.mkdir(parents=True, exist_ok=True)
-            image.save(image_dir / 'image.png')
+    for idx, prompt in enumerate(tqdm(prompts, desc='Generate')):
+        image = wrapper.generate(prompt)
+        image_dir = args.output_dir / f'{idx:05d}_{safe_prompt_name(prompt)}'
+        image_dir.mkdir(parents=True, exist_ok=True)
+        image.save(image_dir / 'image.png')
 
-            with torch.no_grad():
-                text_inputs = processor(
-                    text=prompt, return_tensors='pt', truncation=True
-                ).to(device)
-                image_inputs = processor(images=image, return_tensors='pt').to(device)
-                image_features = scorer.get_image_features(**image_inputs)
-                text_features = scorer.get_text_features(**text_inputs)
-                image_features /= image_features.norm(dim=-1, keepdim=True) + 1e-8
-                text_features /= text_features.norm(dim=-1, keepdim=True) + 1e-8
-                score = (
-                    scorer.logit_scale.exp() * (text_features @ image_features.T)
-                )[0][0].item()
-            scores.append(score)
-            writer.writerow([idx, prompt, f'{score:.4f}'])
-            stream.flush()
-
-    values = np.asarray(scores, dtype=np.float32)
-    print(f'PickScore: {values.mean():.2f} +/- {values.std():.2f}')
-    print(f'Saved CSV: {csv_path}')
+    print(f'Saved images: {args.output_dir}')
 
 
 if __name__ == '__main__':
