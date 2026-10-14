@@ -1,6 +1,8 @@
 # Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis
 
-SDXL and PixArt-Sigma refinement and image generation code accompanying **Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis**.
+Official implementation of **[Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis](https://arxiv.org/abs/2607.09753)**.
+
+This repository provides SDXL and PixArt-Sigma refinement and image generation code.
 
 ## SDXL setup
 
