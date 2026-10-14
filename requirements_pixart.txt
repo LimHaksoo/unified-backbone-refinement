@@ -1,0 +1,14 @@
+torch==2.3.0+cu121
+torchvision==0.18.0+cu121
+diffusers==0.33.1
+transformers==4.51.3
+accelerate==1.6.0
+huggingface-hub==0.30.2
+datasets==3.5.1
+numpy==1.26.4
+pillow==11.0.0
+sentencepiece==0.2.0
+protobuf==4.25.3
+beautifulsoup4==4.13.4
+ftfy==6.3.1
+tqdm==4.67.1

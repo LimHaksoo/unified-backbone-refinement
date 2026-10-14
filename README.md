@@ -1,8 +1,8 @@
 # Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis
 
-SDXL evaluation code accompanying **Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis**.
+SDXL and PixArt-Sigma evaluation code accompanying **Unified Backbone Refinement for Diffusion Models via Internal-Latent Analysis**.
 
-## Setup
+## SDXL setup
 
 Use a dedicated Python environment with an NVIDIA GPU and CUDA support. The supplied requirements pin PyTorch 2.3.0 with CUDA 12.1 and Diffusers 0.33.1.
 
@@ -10,7 +10,7 @@ Use a dedicated Python environment with an NVIDIA GPU and CUDA support. The supp
 python -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu121
 ```
 
-Replace these files in the installed Diffusers package with the corresponding files from this repository:
+For SDXL, replace these files in the installed Diffusers package with the corresponding files from this repository. PixArt-Sigma uses the standard Diffusers 0.33.1 pipeline and the standalone hook in `pixart_refinement.py`; it does not require these replacements.
 
 | Repository file | Destination inside the installed `diffusers` package |
 | --- | --- |
@@ -24,7 +24,7 @@ Locate the installed package with:
 python -c "import diffusers; print(diffusers.__path__[0])"
 ```
 
-## Generate images and compute PickScore
+## SDXL: generate images and compute PickScore
 
 Run the original and refined versions with the same seed and prompt count. The `--fixing` flag enables refinement.
 
@@ -35,6 +35,27 @@ python compute_sdxl.py --device_idx 0 --seed 0 --num_prompts 100 --output_dir ./
 
 Each run saves images and a `scores_all.csv` file in its output directory. The scripts download the required models and prompts on first use.
 
+## PixArt-Sigma: generate images and compute PickScore
+
+In a separate Python 3.10 environment with an NVIDIA GPU and CUDA support, install the PixArt requirements:
+
+```bash
+python -m pip install -r requirements_pixart.txt --extra-index-url https://download.pytorch.org/whl/cu121
+```
+
+The PixArt requirements use NumPy 1.26.4 for compatibility with the pinned PyTorch 2.3 build. No Diffusers source-file replacement is needed.
+
+The PixArt implementation uses `PixArt-alpha/PixArt-Sigma-XL-2-1024-MS`. Run both versions with the same seed and prompt count:
+
+```bash
+python compute_pixart.py --device_idx 0 --seed 0 --num_prompts 100 --output_dir ./results/pixart/original
+python compute_pixart.py --device_idx 0 --seed 0 --num_prompts 100 --output_dir ./results/pixart/fixed --fixing
+```
+
+`--fixing` (also accepted as `--suppress`) enables refinement. Defaults from the supplied implementation are 50 inference steps, block index 23 (zero-based), quantile `q=0.9`, blending coefficient `kappa=0.5`, and EMA coefficient 0.7. Refinement is applied at zero-based steps 5 through 9. The command-line options `--steps`, `--layer_idx`, `--q`, and `--kappa` expose the corresponding settings. The generator seed is reset for each prompt, matching the supplied PixArt evaluation code.
+
+Each command writes prompt images and `scores_all.csv` directly into its `--output_dir`. The required model weights and prompts are downloaded on first use.
+
 ## Compute paired Body Distortion Score (BDS)
 
 Pass the parent directory containing both `original/` and `fixed/`:
@@ -44,6 +65,8 @@ python compute_bds.py --num_prompts 100 --output_dir ./results --csv_path ./resu
 ```
 
 The script evaluates prompts matching its human-related keyword filter and saves keypoint visualizations in `comparisons_bds_check/`.
+
+For the PixArt directories above, also install `ultralytics==8.3.129` and `opencv-python==4.11.0.86`, then use `--output_dir ./results/pixart` and a matching `--num_prompts` value.
 
 ## Third-party code
 
